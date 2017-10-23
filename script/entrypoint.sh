@@ -6,7 +6,8 @@ TRY_LOOP="20"
 
 : ${REDIS_HOST:="redis"}
 : ${REDIS_PORT:="6379"}
-
+: ${REMOTE_LOG:="false"}
+: ${REMOTE_LOG_LOCATION:=""}
 : ${POSTGRES_HOST:="postgres"}
 : ${POSTGRES_PORT:="5432"}
 : ${POSTGRES_USER:="airflow"}
@@ -18,6 +19,11 @@ TRY_LOOP="20"
 # Load DAGs exemples (default: Yes)
 if [ "$LOAD_EX" = "n" ]; then
     sed -i "s/load_examples = True/load_examples = False/" "$AIRFLOW_HOME"/airflow.cfg
+fi
+
+if [ "$REMOTE_LOG" = "true" ]; then
+    sed -i "s/remote_log_conn_id =/remote_log_conn_id = s3_default/" "$AIRFLOW_HOME"/airflow.cfg
+    sed -i "s|remote_base_log_folder =|remote_base_log_folder = $REMOTE_LOG_LOCATION|" "$AIRFLOW_HOME"/airflow.cfg
 fi
 
 # Install custome python package if requirements.txt is present
