@@ -35,9 +35,14 @@ RUN set -ex \
         liblapack-dev \
         libpq-dev \
         git \
+        zlib1g-dev \
+        libreadline-dev \
+        libgdbm-dev \
+        openssl \
     ' \
-    && apt-get update -yqq \
-    && apt-get install -yqq --no-install-recommends \
+    && apt-get update -yqq
+
+RUN apt-get install -yqq --no-install-recommends \
         $buildDeps \
         python-pip \
         python-requests \
@@ -46,12 +51,28 @@ RUN set -ex \
         netcat \
         locales \
         postgresql-client \
+        g++ \
+        make \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
-    && python -m pip install -U pip \
-    && pip install Cython \
+    && python -m pip install -U pip
+
+RUN apt-get install -yqq libpython-all-dev
+
+RUN mkdir -p /tmp/ruby \
+    && cd /tmp/ruby \
+    && curl -O https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.4.tar.gz \
+    && tar xvfz ruby-2.3.4.tar.gz \
+    && cd ruby-2.3.4 \
+    && ./configure \
+    && make \
+    && make install \
+    && cd - \
+    && rm -rf /tmp/ruby
+
+RUN pip install Cython \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
